@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mail-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mail-storage
+  template:
+    metadata:
+      labels:
+        app: mail-storage
+    spec:
+      containers:
+      - name: mail-storage
+        image: mail-storage:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mail-storage
+spec:
+  selector:
+    app: mail-storage
+  ports:
+    - protocol: TCP
+      port: 5002
+      targetPort: 5002
