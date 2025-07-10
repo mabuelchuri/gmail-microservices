@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/mabuelchuri/gmail-microservices.git'  branch: 'main'
+                git 'https://github.com/mabuelchuri/gmail-microservices.git', branch: 'main'
             }
         }
 
