@@ -6,40 +6,44 @@ pipeline {
     }
 
     stages {
+
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/mabuelchuri/gmail-microservices.git', branch: 'main'
+                git(
+                    url: 'https://github.com/mabuelchuri/gmail-microservices.git',
+                    branch: 'main'
+                )
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                script {
-                    sh 'docker build -t email-api:latest ./email-api'
-                    sh 'docker build -t spam-checker:latest ./spam-checker'
-                    sh 'docker build -t mail-storage:latest ./mail-storage'
-                }
+                echo "Building Docker images..."
+                sh 'docker build -t email-api:latest ./email-api'
+                sh 'docker build -t mail-storage:latest ./mail-storage'
+                sh 'docker build -t spam-checker:latest ./spam-checker'
             }
         }
 
         stage('Load Images into Minikube') {
             steps {
-                script {
-                    sh 'minikube image load email-api:latest'
-                    sh 'minikube image load spam-checker:latest'
-                    sh 'minikube image load mail-storage:latest'
-                }
+                echo "Loading images into Minikube..."
+                sh 'minikube image load email-api:latest'
+                sh 'minikube image load mail-storage:latest'
+                sh 'minikube image load spam-checker:latest'
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f ./k8s/'
+                echo "Deploying Kubernetes manifests..."
+                sh 'kubectl apply -f ./k8s'
             }
         }
 
         stage('Check Pods') {
             steps {
+                echo "Checking pod status..."
                 sh 'kubectl get pods'
             }
         }
