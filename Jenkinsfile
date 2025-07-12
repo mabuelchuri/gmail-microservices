@@ -1,31 +1,37 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:latest'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
+    agent any
+
+    options {
+        skipDefaultCheckout(true)
     }
 
     environment {
-        DOCKER_HOST = "unix:///var/run/docker.sock"
+        IMAGE_NAME = "email-api"
     }
 
     stages {
+        stage('Clone Repository') {
+            steps {
+                echo 'Cloning Git repository manually...'
+                git url: 'https://github.com/mabuelchuri/gmail-microservices.git', branch: 'main'
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
                 echo 'Building Docker images...'
                 sh 'docker build -t email-api:latest ./email-api'
-                sh 'docker build -t mail-storage:latest ./mail-storage'
                 sh 'docker build -t spam-checker:latest ./spam-checker'
+                sh 'docker build -t mail-storage:latest ./mail-storage'
             }
         }
 
         stage('Load Images into Minikube') {
             steps {
-                echo 'Loading images into Minikube...'
+                echo 'Loading Docker images into Minikube...'
                 sh 'minikube image load email-api:latest'
-                sh 'minikube image load mail-storage:latest'
                 sh 'minikube image load spam-checker:latest'
+                sh 'minikube image load mail-storage:latest'
             }
         }
 
@@ -38,8 +44,7 @@ pipeline {
 
         stage('Check Pods') {
             steps {
-                echo 'Checking pods...'
-                sh 'kubectl get pods'
+                sh 'kubectl get pods -o wide'
             }
         }
     }
